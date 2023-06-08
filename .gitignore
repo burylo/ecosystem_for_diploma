@@ -1,6 +1,7 @@
 .env
 .conf
 html
+img
 __pycache__/
 .Python
 [Bb]in
