@@ -1,5 +1,4 @@
 import RPi.GPIO as GPIO
-import time
 
 servo_pin = 18
 
@@ -16,7 +15,7 @@ def set_servo_speed(speed):
     duty = speed / 10.0 + 5.0
     pwm.ChangeDutyCycle(duty)
 
-def servo_start(t):
+def servo_start():
     try:
         pwm.start(0)  # Запустити PWM з нульовим відсотком заповнення
         # Рух вперед з середньою швидкістю.
@@ -25,15 +24,13 @@ def servo_start(t):
         #  10% - максимальна
         #  0% - зупинка
         set_servo_speed(7)  
-        while t != 0:
-            time.sleep(1)  # Затримка на 1 секунду
-            t -= 1
-        else:
-            set_servo_speed(0)  # Зупинити сервопривід
 
     except KeyboardInterrupt:
         pass
 
+def servo_stop():
+    try:
+        set_servo_speed(0)  # Зупинити сервопривід
     finally:
         pwm.stop()
         GPIO.cleanup()

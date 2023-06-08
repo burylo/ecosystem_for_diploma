@@ -31,6 +31,7 @@
   <button class="add-device-btn" onclick="openAddDevicePage()">
     <span class="add-device-icon"></a></span>
   </button>
+  <div class="device-list">
   {% for row in data %}
   <div class="device-block" id="device_{{ row[0] }}">
     <div class="device-info">
@@ -45,5 +46,6 @@
     </label>
   </div>
   {% endfor %}
+</div>
 </body>
 </html>

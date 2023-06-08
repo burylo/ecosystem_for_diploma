@@ -1,44 +1,62 @@
-import RPi.GPIO as GPIO
 import time
+import random
+import math
 import threading
 
 
-
 class HX711:
-
     def __init__(self, dout, pd_sck, gain=128):
         self.PD_SCK = pd_sck
 
         self.DOUT = dout
 
+        # Last time we've been read.
+        self.lastReadTime = time.time()
+        self.sampleRateHz = 80.0
+        self.resetTimeStamp = time.time()
+        self.sampleCount = 0
+        self.simulateTare = False
+
         # Mutex for reading from the HX711, in case multiple threads in client
         # software try to access get values from the class at the same time.
         self.readLock = threading.Lock()
         
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.PD_SCK, GPIO.OUT)
-        GPIO.setup(self.DOUT, GPIO.IN)
-
         self.GAIN = 0
-
-        # The value returned by the hx711 that corresponds to your reference
-        # unit AFTER dividing by the SCALE.
-        self.REFERENCE_UNIT = 1
-        self.REFERENCE_UNIT_B = 1
-
+        self.REFERENCE_UNIT = 1  # The value returned by the hx711 that corresponds to your reference unit AFTER dividing by the SCALE.
+        
         self.OFFSET = 1
-        self.OFFSET_B = 1
         self.lastVal = int(0)
 
         self.DEBUG_PRINTING = False
-
+        
         self.byte_format = 'MSB'
         self.bit_format = 'MSB'
 
         self.set_gain(gain)
 
+
+
+
         # Think about whether this is necessary.
         time.sleep(1)
+
+    def convertToTwosComplement24bit(self, inputValue):
+       # HX711 has saturating logic.
+       if inputValue >= 0x7fffff:
+          return 0x7fffff
+
+       # If it's a positive value, just return it, masked with our max value.
+       if inputValue >= 0:
+          return inputValue & 0x7fffff
+
+       if inputValue < 0:
+          # HX711 has saturating logic.
+          if inputValue < -0x800000:
+             inputValue = -0x800000
+
+          diff = inputValue + 0x800000
+
+          return 0x800000 + diff
 
         
     def convertFromTwosComplement24bit(self, inputValue):
@@ -46,7 +64,11 @@ class HX711:
 
     
     def is_ready(self):
-        return GPIO.input(self.DOUT) == 0
+        # Calculate how long we should be waiting between samples, given the
+        # sample rate.
+        sampleDelaySeconds = 1.0 / self.sampleRateHz
+
+        return time.time() >= self.lastReadTime + sampleDelaySeconds
 
     
     def set_gain(self, gain):
@@ -56,8 +78,6 @@ class HX711:
             self.GAIN = 3
         elif gain is 32:
             self.GAIN = 2
-
-        GPIO.output(self.PD_SCK, False)
 
         # Read out a set of raw bytes and throw it away.
         self.readRawBytes()
@@ -75,56 +95,26 @@ class HX711:
         return 0
         
 
-    def readNextBit(self):
-       # Clock HX711 Digital Serial Clock (PD_SCK).  DOUT will be
-       # ready 1us after PD_SCK rising edge, so we sample after
-       # lowering PD_SCL, when we know DOUT will be stable.
-       GPIO.output(self.PD_SCK, True)
-       GPIO.output(self.PD_SCK, False)
-       value = GPIO.input(self.DOUT)
-
-       # Convert Boolean to int and return it.
-       return int(value)
-
-
-    def readNextByte(self):
-       byteValue = 0
-
-       # Read bits and build the byte from top, or bottom, depending
-       # on whether we are in MSB or LSB bit mode.
-       for x in range(8):
-          if self.bit_format == 'MSB':
-             byteValue <<= 1
-             byteValue |= self.readNextBit()
-          else:
-             byteValue >>= 1              
-             byteValue |= self.readNextBit() * 0x80
-
-       # Return the packed byte.
-       return byteValue 
-        
-
     def readRawBytes(self):
         # Wait for and get the Read Lock, incase another thread is already
-        # driving the HX711 serial interface.
+        # driving the virtual HX711 serial interface.
         self.readLock.acquire()
 
         # Wait until HX711 is ready for us to read a sample.
         while not self.is_ready():
            pass
 
+        self.lastReadTime = time.time()
+
+        # Generate a 24bit 2s complement sample for the virtual HX711.
+        rawSample = self.convertToTwosComplement24bit(self.generateFakeSample())
+        
         # Read three bytes of data from the HX711.
-        firstByte  = self.readNextByte()
-        secondByte = self.readNextByte()
-        thirdByte  = self.readNextByte()
+        firstByte  = (rawSample >> 16) & 0xFF
+        secondByte = (rawSample >> 8)  & 0xFF
+        thirdByte  = rawSample & 0xFF
 
-        # HX711 Channel and gain factor are set by number of bits read
-        # after 24 data bits.
-        for i in range(self.GAIN):
-           # Clock a bit out of the HX711 and throw it away.
-           self.readNextBit()
-
-        # Release the Read Lock, now that we've finished driving the HX711
+        # Release the Read Lock, now that we've finished driving the virtual HX711
         # serial interface.
         self.readLock.release()           
 
@@ -165,16 +155,21 @@ class HX711:
     def read_average(self, times=3):
         # Make sure we've been asked to take a rational amount of samples.
         if times <= 0:
-            raise ValueError("HX711()::read_average(): times must >= 1!!")
+            print("HX711().read_average(): times must >= 1!!  Assuming value of 1.")
+            times = 1
 
         # If we're only average across one value, just read it and return it.
         if times == 1:
             return self.read_long()
 
-        # If we're averaging across a low amount of values, just take the
-        # median.
+        # If we're averaging across a low amount of values, just take an
+        # arithmetic mean.
         if times < 5:
-            return self.read_median(times)
+            values = int(0)
+            for i in range(times):
+                values += self.read_long()
+
+            return values / times
 
         # If we're taking a lot of samples, we'll collect them in a list, remove
         # the outliers, then take the mean of the remaining set.
@@ -194,199 +189,80 @@ class HX711:
         # Return the mean of remaining samples.
         return sum(valueList) / len(valueList)
 
-
-    # A median-based read method, might help when getting random value spikes
-    # for unknown or CPU-related reasons
-    def read_median(self, times=3):
-       if times <= 0:
-          raise ValueError("HX711::read_median(): times must be greater than zero!")
-      
-       # If times == 1, just return a single reading.
-       if times == 1:
-          return self.read_long()
-
-       valueList = []
-
-       for x in range(times):
-          valueList += [self.read_long()]
-
-       valueList.sort()
-
-       # If times is odd we can just take the centre value.
-       if (times & 0x1) == 0x1:
-          return valueList[len(valueList) // 2]
-       else:
-          # If times is even we have to take the arithmetic mean of
-          # the two middle values.
-          midpoint = len(valueList) / 2
-          return sum(valueList[midpoint:midpoint+2]) / 2.0
-
-
-    # Compatibility function, uses channel A version
+    
     def get_value(self, times=3):
-        return self.get_value_A(times)
+        return self.read_average(times) - self.OFFSET
 
-
-    def get_value_A(self, times=3):
-        return self.read_median(times) - self.get_offset_A()
-
-
-    def get_value_B(self, times=3):
-        # for channel B, we need to set_gain(32)
-        g = self.get_gain()
-        self.set_gain(32)
-        value = self.read_median(times) - self.get_offset_B()
-        self.set_gain(g)
-        return value
-
-    # Compatibility function, uses channel A version
+    
     def get_weight(self, times=3):
-        return self.get_weight_A(times)
-
-
-    def get_weight_A(self, times=3):
-        value = self.get_value_A(times)
+        value = self.get_value(times)
         value = value / self.REFERENCE_UNIT
         return value
 
-    def get_weight_B(self, times=3):
-        value = self.get_value_B(times)
-        value = value / self.REFERENCE_UNIT_B
-        return value
-
     
-    # Sets tare for channel A for compatibility purposes
     def tare(self, times=15):
-        return self.tare_A(times)
-    
-    
-    def tare_A(self, times=15):
+        # If we aren't simulating Taring because it takes too long, just skip it.
+        if not self.simulateTare:
+            return 0
+
         # Backup REFERENCE_UNIT value
-        backupReferenceUnit = self.get_reference_unit_A()
-        self.set_reference_unit_A(1)
-        
+        reference_unit = self.REFERENCE_UNIT
+        self.set_reference_unit(1)
+
         value = self.read_average(times)
 
         if self.DEBUG_PRINTING:
-            print("Tare A value:", value)
+            print("Tare value:", value)
         
-        self.set_offset_A(value)
+        self.set_offset(value)
 
         # Restore the reference unit, now that we've got our offset.
-        self.set_reference_unit_A(backupReferenceUnit)
+        self.set_reference_unit(reference_unit)
 
-        return value
-
-
-    def tare_B(self, times=15):
-        # Backup REFERENCE_UNIT value
-        backupReferenceUnit = self.get_reference_unit_B()
-        self.set_reference_unit_B(1)
-
-        # for channel B, we need to set_gain(32)
-        backupGain = self.get_gain()
-        self.set_gain(32)
-
-        value = self.read_average(times)
-
-        if self.DEBUG_PRINTING:
-            print("Tare B value:", value)
-        
-        self.set_offset_B(value)
-
-        # Restore gain/channel/reference unit settings.
-        self.set_gain(backupGain)
-        self.set_reference_unit_B(backupReferenceUnit)
-       
-        return value
-
+        return value;
 
     
     def set_reading_format(self, byte_format="LSB", bit_format="MSB"):
+
         if byte_format == "LSB":
             self.byte_format = byte_format
         elif byte_format == "MSB":
             self.byte_format = byte_format
         else:
-            raise ValueError("Unrecognised byte_format: \"%s\"" % byte_format)
+            print("Unrecognised byte_format: \"%s\"" % byte_format)
 
         if bit_format == "LSB":
             self.bit_format = bit_format
         elif bit_format == "MSB":
             self.bit_format = bit_format
         else:
-            raise ValueError("Unrecognised bitformat: \"%s\"" % bit_format)
+            print("Unrecognised bit_format: \"%s\"" % bit_format)
 
             
 
-
-    # sets offset for channel A for compatibility reasons
     def set_offset(self, offset):
-        self.set_offset_A(offset)
-
-    def set_offset_A(self, offset):
         self.OFFSET = offset
 
-    def set_offset_B(self, offset):
-        self.OFFSET_B = offset
-
+        
     def get_offset(self):
-        return self.get_offset_A()
-
-    def get_offset_A(self):
         return self.OFFSET
-
-    def get_offset_B(self):
-        return self.OFFSET_B
-
 
     
     def set_reference_unit(self, reference_unit):
-        self.set_reference_unit_A(reference_unit)
-
-        
-    def set_reference_unit_A(self, reference_unit):
         # Make sure we aren't asked to use an invalid reference unit.
         if reference_unit == 0:
-            raise ValueError("HX711::set_reference_unit_A() can't accept 0 as a reference unit!")
+            print("HX711().set_reference_unit(): Can't use 0 as a reference unit!!")
             return
 
         self.REFERENCE_UNIT = reference_unit
 
-        
-    def set_reference_unit_B(self, reference_unit):
-        # Make sure we aren't asked to use an invalid reference unit.
-        if reference_unit == 0:
-            raise ValueError("HX711::set_reference_unit_A() can't accept 0 as a reference unit!")
-            return
 
-        self.REFERENCE_UNIT_B = reference_unit
-
-
-  
-        
-    def get_reference_unit_A(self):
-        return self.REFERENCE_UNIT
-
-        
-    def get_reference_unit_B(self):
-        return self.REFERENCE_UNIT_B
-
-    def get_reference_unit(self):
-        return get_reference_unit_A()
-    
-        
     def power_down(self):
         # Wait for and get the Read Lock, incase another thread is already
         # driving the HX711 serial interface.
         self.readLock.acquire()
 
-        # Cause a rising edge on HX711 Digital Serial Clock (PD_SCK).  We then
-        # leave it held up and wait 100 us.  After 60us the HX711 should be
-        # powered down.
-        GPIO.output(self.PD_SCK, False)
-        GPIO.output(self.PD_SCK, True)
-
+        # Wait 100us for the virtual HX711 to power down.
         time.sleep(0.0001)
 
         # Release the Read Lock, now that we've finished driving the HX711
@@ -399,10 +275,7 @@ class HX711:
         # driving the HX711 serial interface.
         self.readLock.acquire()
 
-        # Lower the HX711 Digital Serial Clock (PD_SCK) line.
-        GPIO.output(self.PD_SCK, False)
-
-        # Wait 100 us for the HX711 to power back up.
+        # Wait 100 us for the virtual HX711 to power back up.
         time.sleep(0.0001)
 
         # Release the Read Lock, now that we've finished driving the HX711
@@ -418,8 +291,40 @@ class HX711:
 
 
     def reset(self):
-        self.power_down()
-        self.power_up()
+        # self.power_down()
+        # self.power_up()
+
+        # Mark time when we were reset.  We'll use this for sample generation.
+        self.resetTimeStamp = time.time()
 
 
-# EOF - hx711.pyhx7
+    def generateFakeSample(self):
+       sampleTimeStamp = time.time() - self.resetTimeStamp
+
+       noiseScale = 1.0
+       noiseValue = random.randrange(-(noiseScale * 1000),(noiseScale * 1000)) / 1000.0
+       sample     = math.sin(math.radians(sampleTimeStamp * 20)) * 72.0
+
+       self.sampleCount += 1
+
+       if sample < 0.0:
+          sample = -sample
+
+       sample += noiseValue
+
+       BIG_ERROR_SAMPLE_FREQUENCY = 142
+       ###BIG_ERROR_SAMPLE_FREQUENCY = 15
+       BIG_ERROR_SAMPLES = [0.0, 40.0, 70.0, 150.0, 280.0, 580.0]
+
+       if random.randrange(0, BIG_ERROR_SAMPLE_FREQUENCY) == 0:
+          sample = random.sample(BIG_ERROR_SAMPLES, 1)[0]
+          print("Sample %d: Injecting %f as a random bad sample." % (self.sampleCount, sample))
+
+       sample *= 1000
+
+       sample *= self.REFERENCE_UNIT
+
+       return int(sample)
+
+
+# EOF - emulated_hx711.py

@@ -21,6 +21,8 @@
 
   <form class="add-device-form" action="{{ url_for('process_form') }}" method="POST">
     <div class="form-group">
+      <label for="device-name">Тип пристрою:</label>
+      <input type="text" id="device-type" name="device-type" value="{{ device }}" readonly>
       <label for="device-name">Назва пристрою:</label>
       <input type="text" id="device-name" name="device-name" placeholder="Введіть назву пристрою" required>
       <label for="device-desc" class="device-desc">Опис пристрою:</label>

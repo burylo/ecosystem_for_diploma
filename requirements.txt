@@ -1,5 +1,7 @@
 configparser
 mysql-connector-python
+flask_apscheduler
+flask
 wheel
 # rpi-gpio
 hx711

@@ -2,6 +2,7 @@
 .conf
 html/
 img/
+gpio/old_RPi
 __pycache__/
 .Python
 [Bb]in

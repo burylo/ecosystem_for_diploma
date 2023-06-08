@@ -1,25 +1,25 @@
 from flask import Flask, render_template, url_for, request, redirect
-import configparser
+from flask_apscheduler import APScheduler
+# import configparser
 from datetime import datetime
 # My Libs
 import mysql_manager
+import time_checker
 
 app = Flask(__name__)
 
-def edit_config(section_name, key, value):
-    edit = configparser.ConfigParser()
-    edit.read('configfile.ini')
-    edit[section_name][key] = value
-     # Write the new structure to the new file
-    with open("configfile.ini", 'w') as configfile:
-        edit.write(configfile)
+scheduler = APScheduler()
 
-
-# Read config.ini file
-def get_data(value):
-    config_obj = configparser.ConfigParser()
-    config_obj.read("configfile.ini")
-    return config_obj["test"][value]
+# Налаштування планувальника
+app.config['SCHEDULER_API_ENABLED'] = True
+app.config['JOBS'] = [
+    {
+        'id': 'check_device',
+        'func': print("Hello there" + datetime.date),#time_checker.activate_device(),
+        'trigger': 'interval',
+        'seconds': 60  # Частота виконання функції (у цьому випадку кожну хвилину)
+    }
+]
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
@@ -46,7 +46,7 @@ def back_to_device_list():
 def device_config():
     data = request.args.get('device') # Отримати значення параметру 'paragraph' з URL
     print(data)
-    return render_template('config_new.html', data=data)
+    return render_template('config_new.html', device=data)
 
 @app.route('/process_form', methods=['POST', 'GET'])
 def process_form():
@@ -59,10 +59,11 @@ def process_form():
         time_start = request.form.get('start-time')
         time_end = ""
         weight = request.form.get('portion-mass')
+        device = request.form.get('device-type')
         # Записуємо дані в базу даних
         
-        mysql_manager.incert_into_table(name, desc, conn_type, period, time_start, time_end, weight)
-        print(name, desc, conn_type, period, time_start, time_end, weight)
+        mysql_manager.incert_into_table(name, desc, conn_type, period, time_start, time_end, weight, device)
+        print(name, desc, conn_type, period, time_start, time_end, weight, device)
         print("DATA WAS SENDED")
         return redirect(url_for('index'))
     else:
@@ -74,15 +75,6 @@ def delete_device():
     mysql_manager.delete_row(device_id)
     print(device_id)
     return 'Block' + device_id + 'was deleted'
-
-@app.route('/config', methods=['POST', 'GET'])
-def config():
-    if request.method == "POST":
-        user_name =  request.form["user"]
-        edit_config('test', 'user', user_name) 
-        return render_template("config.html", usr=get_data("user"), host=get_data("host"))
-    else:
-        return render_template("config.html", usr=get_data("user"), host=get_data("host"))
 
 if __name__ == "__main__":
     app.run(debug=True)

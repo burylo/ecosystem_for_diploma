@@ -1,6 +1,6 @@
 import RPi.GPIO as GPIO
 import time
-from hx711 import HX711
+from .hx711 import HX711 as HX711
 
 # Ініціалізація GPIO
 GPIO.setmode(GPIO.BCM)
@@ -17,6 +17,7 @@ def change_clk_pin(c_pin):
 
 # Створення об'єкту HX711
 hx711 = HX711(HX711_DAT_PIN, HX711_CLK_PIN)
+hx711.set_reading_format("MSB", "MSB")
 
 # Калібрування
 hx711.set_reference_unit(92)  # Встановлення одиниці виміру 1 грам

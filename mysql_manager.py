@@ -19,13 +19,13 @@ else:
     print("Not connected")
 
 # Запит INSERT
-def incert_into_table(name, desc, conn_type, period, time_start, time_end, weight):
+def incert_into_table(name, desc, conn_type, period, time_start, time_end, weight, device_type):
     db = db_connect()
     # Створення курсора
     cursor = db.cursor()
-    query = "INSERT INTO Devices (Name, Description, ConnectionType, Period, TimeCountStart, TimeCountEnd, Weight) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+    query = "INSERT INTO Devices (Name, Description, ConnectionType, Period, TimeCountStart, TimeCountEnd, Weight, device_type) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
     # Значення, які ви хочете записати
-    data = (name, desc, conn_type, period, time_start, time_end, weight)
+    data = (name, desc, conn_type, period, time_start, time_end, weight, device_type)
 
     # Виконання запиту
     cursor.execute(query, data)

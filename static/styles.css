@@ -10,6 +10,10 @@ body {
     text-align: center;
   }
   
+  .device-list {
+    margin: 0px 250px;
+  }
+
   .add-device-btn {
     position: absolute;
     top: 20px;
