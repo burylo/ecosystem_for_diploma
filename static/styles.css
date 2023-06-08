@@ -1,0 +1,220 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+  }
+  
+  h1 {
+    color: #333;
+    text-align: center;
+  }
+  
+  .add-device-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: #2196F3;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .add-device-icon {
+    width: 24px;
+    height: 24px;
+    background-color: white;
+    border-radius: 50%;
+    position: relative;
+  }
+  
+  .add-device-icon:before,
+  .add-device-icon:after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    background-color: #333;
+  }
+  
+  .add-device-icon:before {
+    width: 14px;
+    height: 2px;
+    margin-left: -7px;
+    margin-top: -1px;
+  }
+  
+  .add-device-icon:after {
+    width: 2px;
+    height: 14px;
+    margin-left: -1px;
+    margin-top: -7px;
+  }
+  
+  .device-block {
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .device-info {
+    flex-grow: 1;
+    margin-right: 20px;
+  }
+  
+  .device-name {
+    font-weight: bold;
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 10px;
+  }
+  
+  .device-desc {
+    font-weight: bold;
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 10px;
+  }
+  
+  .device-type {
+    color: #666;
+    margin-bottom: 5px;
+  }
+  
+  .device-description {
+    color: #333;
+    margin-bottom: 15px;
+  }
+  
+  .switch {
+    display: flex;
+    align-items: center;
+  }
+  
+  .switch input {
+    display: none;
+  }
+  
+  .slider {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+    margin-left: 10px;
+  }
+  
+  .slider:before {
+    content: "";
+    position: absolute;
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  }
+  
+  input:checked + .slider {
+    background-color: #15ec0d;
+  }
+  
+  input:checked + .slider:before {
+    transform: translateX(26px);
+  }
+  
+  .delete-button {
+    background-color: #ff5050;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .delete-button:hover {
+    background-color: #ff3333;
+  }
+  
+  .delete-button:focus {
+    outline: none;
+  }
+  
+  .device-block {
+    margin-bottom: 16px;
+  }
+
+  /* Респонсивні стилі для мобільних пристроїв */
+
+@media screen and (max-width: 480px) {
+  .add-device-btn {
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+  }
+
+  .add-device-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .add-device-icon:before {
+    width: 10px;
+    height: 1px;
+    margin-left: -5px;
+    margin-top: -0.5px;
+  }
+
+  .add-device-icon:after {
+    width: 1px;
+    height: 10px;
+    margin-left: -0.5px;
+    margin-top: -5px;
+  }
+
+  .device-block {
+    padding: 15px;
+  }
+
+  .device-name {
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+
+  .device-desc {
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+
+  .device-type {
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  .device-description {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+
+  .delete-button {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}

@@ -1,0 +1,95 @@
+/* styles.css */
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+  }
+  
+  h1 {
+    color: #333;
+    font-size: 24px;
+  }
+  
+  .add-device-form {
+    max-width: 400px;
+    margin-top: 20px;
+    padding:   55px 82px 48px;
+    width: 250 px;
+    justify-content: center;
+    margin: 0 auto;
+    background-color: #ffffff;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  input[type="text"],
+  select {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+  
+  .submit-button {
+    background-color: #2196F3;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .back-button {
+    background-color: #2196F3;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .device-desc {
+    margin-top: 10px;
+  }
+  #portion-mass {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+  #delay-time {
+    width: 100%;
+  }
+  #start-time {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+
+  .home-link {
+    background-color: #768b9c;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: large;
+  }
+
+  .add-device-title {
+    text-align: center;
+    flex-grow: 1;
+    margin-top: 20px;
+  }

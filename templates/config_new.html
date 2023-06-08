@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Система подачі корму</title>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='config_device.css') }}">
+  <script>
+    
+    function goBack() {
+        window.location.href = "{{ url_for('back_to_device_list') }}";
+      }
+      function go_home() {
+        window.location.href = "{{ url_for('index') }}";
+      }
+  </script>
+</head>
+<body>
+  <h1>
+    <button class="home-link" onclick="go_home()">Головна</button>
+    <div class="add-device-title">Система подачі корму</div>
+  </h1>
+
+  <form class="add-device-form" action="{{ url_for('process_form') }}" method="POST">
+    <div class="form-group">
+      <label for="device-name">Назва пристрою:</label>
+      <input type="text" id="device-name" name="device-name" placeholder="Введіть назву пристрою" required>
+      <label for="device-desc" class="device-desc">Опис пристрою:</label>
+      <input type="text" id="device-desc" name="device-desc" placeholder="Опис пристрою" required>
+    </div>
+    <div class="form-group">
+      <label for="connection-type">Тип з'єднання:</label>
+      <select id="connection-type" name="connection-type">
+        <option value="wifi">Wi-Fi</option>
+        <option value="ethernet">Ehertnet</option>
+        <option value="gpio">GPIO</option>
+      </select>
+    </div>
+    <div class="form-group">
+        <label for="delay-time">Час подачі кожні:</label>
+        <select id="delay-time" name="delay-time">
+            <option value="h_1">1 годину</option>
+            <option value="h_2">2 години</option>
+            <option value="h_4">4 години</option>
+            <option value="h_6">6 годин</option>
+            <option value="h_8">8 годин</option>
+            <option value="h_10">10 годин</option>
+            <option value="h_12">12 годин</option>
+            <option value="h_24">24 години</option>
+          </select>
+      </div>
+      <div class="form-group">
+        <label for="start-time">Час початку:</label>
+        <input type="time" id="start-time" name="start-time" placeholder="Введіть масу порції в грамах" required >
+        <p id="errorText" class="error-text"></p>
+      </div>
+      <div class="form-group">
+        <label for="portion-mass">Маса порції:</label>
+        <input type="number" maxlength="4" max="1000" id="portion-mass" name="portion-mass" placeholder="Введіть масу порції в грамах" required >
+        <p id="errorText" class="error-text"></p>
+      </div>
+    <div class="form-group">
+      <button type="submit", class="submit-button">Додати</button>
+      <button class="back-button" onclick="goBack()">Назад</button>
+    </div>
+  </form>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Список пристроїв</title>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    function openAddDevicePage() {
+      window.location.href = "{{ url_for('add_devices') }}";
+    }
+    function delete_device(device_id){
+        $("#device_"+device_id).remove();
+        // Виконати AJAX-запит до сервера Flask
+        $.ajax({
+          url: '/delete_device',
+          type: 'POST',
+          data: {'blockId': device_id},
+          success: function(response) {
+            console.log('Запит виконано успішно');
+          },
+          error: function(error) {
+            console.log('Помилка при виконанні запиту');
+          }
+         });
+
+    };
+  </script>
+</head>
+<body>
+  <h1>Список ваших пристроїв</h1>
+  <button class="add-device-btn" onclick="openAddDevicePage()">
+    <span class="add-device-icon"></a></span>
+  </button>
+  {% for row in data %}
+  <div class="device-block" id="device_{{ row[0] }}">
+    <div class="device-info">
+      <div class="device-name">{{ row[1] }}</div>
+      <div class="device-type">{{ row[3] }}</div>
+      <div class="device-description">{{ row[2] }}</div>
+    </div>
+    <button class="delete-button" onclick="delete_device('{{ row[0] }}');">Видалити</button>
+    <label class="switch">
+      <input type="checkbox">
+      <span class="slider"></span>
+    </label>
+  </div>
+  {% endfor %}
+</body>
+</html>

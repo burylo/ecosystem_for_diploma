@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Обрати пристрій</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .home-link {
+      background-color: #768b9c;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: large;
+    }
+
+    .add-device-title {
+      text-align: center;
+      flex-grow: 1;
+      margin: 0 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 10px;
+    }
+
+    td {
+      padding: 0;
+    }
+
+    .table-cell {
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .table-cell a {
+      display: block;
+      text-decoration: none;
+      color: #333;
+      text-decoration: none;
+    }
+
+    .table-cell img {
+      width: 200px;
+      height: auto;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+
+    .table-cell p {
+      margin: 0;
+      padding: 10px;
+      color: black;
+    }
+
+    a {
+      text-decoration: none;
+    }
+    p {
+      font-size: x-large;
+    }
+  </style>
+  <script>
+      function go_home() {
+        window.location.href = "{{ url_for('index') }}";
+      }
+      $(document).ready(function() {
+        $(".image").click(function() {
+          var paragraphData = $(this).siblings(".paragraph").text(); // Отримати текст параграфу
+  
+          // Перенаправити на нову сторінку і передати дані параграфу як параметр у URL
+          window.location.href = "{{ url_for('device_config') }}?paragraph=" + encodeURIComponent(paragraphData);
+        });
+      });
+  </script>
+</head>
+<body>
+  <h1>
+    <button class="home-link" onclick="go_home()">Головна</button>
+    <div class="add-device-title">Додати пристрій</div>
+  </h1>
+  <table>
+    <tr>
+      <td>
+        <a href="{{ url_for('device_config', device='Система подачі корму') }}">
+          <div class="table-cell">
+            <img src="{{ url_for('static', filename='img/pet-feeder.png') }}" alt="Зображення 1">
+            <p class="paragraph">Система подачі корму</p>
+          </div>
+        </a>
+      </td>
+      <td>
+        <a href="404.html">
+          <div class="table-cell"> 
+            <img src="{{ url_for('static', filename='img/smart-energy.png') }}" alt="Зображення 2">
+            <p class="paragraph">Розумна лампочка</p>
+          </div>
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <a href="404.html">
+          <div class="table-cell">
+            <img src="{{ url_for('static', filename='img/socket.png') }}" alt="Зображення 3">
+            <p>Розумна розетка</p>
+          </div>
+        </a>  
+      </td>
+      <td>
+        <a href="404.html">
+          <div class="table-cell">
+            <img src="{{ url_for('static', filename='img/electric-kettle.png') }}" alt="Зображення 4">
+            <p>Розумний чайник</p>
+          </div>
+        </a>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

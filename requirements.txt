@@ -1,0 +1,6 @@
+configparser
+mysql-connector-python
+wheel
+# rpi-gpio
+hx711
+python-dotenv
