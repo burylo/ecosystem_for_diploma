@@ -8,6 +8,10 @@
     function openAddDevicePage() {
       window.location.href = "{{ url_for('add_devices') }}";
     }
+    function redirectToDeviceConfig(d_id) {
+        // Перенаправлення на сторінку налаштування пристрою з передачею ідентифікатора через GET-параметр
+        window.location.href = "/device_config?device_id=" + d_id;
+    }
     function delete_device(device_id){
         $("#device_"+device_id).remove();
         // Виконати AJAX-запит до сервера Flask
@@ -22,8 +26,25 @@
             console.log('Помилка при виконанні запиту');
           }
          });
-
     };
+
+    function change_status(){
+        // Обробник події перемикання кнопки switch
+        $('.toggleSwitch').on('change', function() {
+            var device_id = $(this).data('device-id');
+            var isChecked = $(this).is(':checked');
+            var status = isChecked ? 'on' : 'off';
+                // AJAX-запит на сервер
+                $.ajax({url: '/toggle_switch', method: 'POST', data: { status: status, blockId: device_id },
+                    // Обробка успішної відповіді з сервера
+                    success: function(response) {console.log(response);},
+                    // Обробка помилки
+                    error: function(xhr, status, error) {console.log(error);}
+                });
+        });
+    }
+    $(document).ready(function(){
+        change_status()})
   </script>
 </head>
 <body>
@@ -34,14 +55,14 @@
   <div class="device-list">
   {% for row in data %}
   <div class="device-block" id="device_{{ row[0] }}">
-    <div class="device-info">
+    <div class="device-info" onclick="redirectToDeviceConfig('{{ row[0] }}')">
       <div class="device-name">{{ row[1] }}</div>
       <div class="device-type">{{ row[3] }}</div>
       <div class="device-description">{{ row[2] }}</div>
     </div>
     <button class="delete-button" onclick="delete_device('{{ row[0] }}');">Видалити</button>
     <label class="switch">
-      <input type="checkbox">
+      <input type="checkbox" class="toggleSwitch" data-device-id="{{ row[0] }}" {% if row[9] == "on" %}checked{% endif %} >
       <span class="slider"></span>
     </label>
   </div>

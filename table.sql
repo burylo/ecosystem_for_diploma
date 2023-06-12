@@ -6,5 +6,6 @@ CREATE TABLE Devices (
   `Period` INT,
   `TimeCountStart` TIME,
   `TimeCountEnd` TIME,
-  `Weight` INT
+  `Weight` INT,
+  `Status` TEXT
 );

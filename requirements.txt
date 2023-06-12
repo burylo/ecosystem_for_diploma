@@ -6,3 +6,4 @@ wheel
 # rpi-gpio
 hx711
 python-dotenv
+configparser

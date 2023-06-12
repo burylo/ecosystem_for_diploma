@@ -89,14 +89,6 @@
       function go_home() {
         window.location.href = "{{ url_for('index') }}";
       }
-      $(document).ready(function() {
-        $(".image").click(function() {
-          var paragraphData = $(this).siblings(".paragraph").text(); // Отримати текст параграфу
-  
-          // Перенаправити на нову сторінку і передати дані параграфу як параметр у URL
-          window.location.href = "{{ url_for('device_config') }}?paragraph=" + encodeURIComponent(paragraphData);
-        });
-      });
   </script>
 </head>
 <body>
@@ -107,7 +99,7 @@
   <table>
     <tr>
       <td>
-        <a href="{{ url_for('device_config', device='Feeder') }}">
+        <a href="{{ url_for('new_device_config', device='Feeder') }}">
           <div class="table-cell">
             <img src="{{ url_for('static', filename='img/pet-feeder.png') }}" alt="Зображення 1">
             <p class="paragraph">Система подачі корму</p>

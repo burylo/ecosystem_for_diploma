@@ -19,13 +19,13 @@ else:
     print("Not connected")
 
 # Запит INSERT
-def incert_into_table(name, desc, conn_type, period, time_start, time_end, weight, device_type):
+def incert_into_table(name, desc, conn_type, period, time_start, time_end, weight, device_type, status="off"):
     db = db_connect()
     # Створення курсора
     cursor = db.cursor()
-    query = "INSERT INTO Devices (Name, Description, ConnectionType, Period, TimeCountStart, TimeCountEnd, Weight, device_type) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+    query = "INSERT INTO Devices (Name, Description, ConnectionType, Period, TimeCountStart, TimeCountEnd, Weight, device_type, Status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
     # Значення, які ви хочете записати
-    data = (name, desc, conn_type, period, time_start, time_end, weight, device_type)
+    data = (name, desc, conn_type, period, time_start, time_end, weight, device_type, status)
 
     # Виконання запиту
     cursor.execute(query, data)
@@ -90,15 +90,22 @@ def delete_row(row_id):
     cursor.close()
     db.close()
 
-def chage_data(row_id, column_name, new_value):
+def update_data(row_id, name, desc, conn_type, period, time_start, time_end, weight, status="off"):
+    # name, desc, conn_type, period, time_start, time_end, weight, device
     db = db_connect()
     cursor = db.cursor()
 
     # SQL запит для зміни значень елементу
     sql = "UPDATE Devices SET {}=%s WHERE id=%s"
     # Виконання SQL запиту з параметрами
-    cursor.execute(sql.format(column_name), (new_value, row_id))
-
+    cursor.execute(sql.format("Name"), (name, row_id))
+    cursor.execute(sql.format("Description"), (desc, row_id))
+    cursor.execute(sql.format("ConnectionType"), (conn_type, row_id))
+    cursor.execute(sql.format("Period"), (period, row_id))
+    cursor.execute(sql.format("TimeCountStart"), (time_start, row_id))
+    cursor.execute(sql.format("TimeCountEnd"), (time_end, row_id))
+    cursor.execute(sql.format("Weight"), (weight, row_id))
+    cursor.execute(sql.format("Status"), (status, row_id))
     # Підтвердження змін в базі даних
     db.commit()
 
@@ -107,9 +114,19 @@ def chage_data(row_id, column_name, new_value):
     db.close()
 
 
-# incert_into_table("Feeder", "Living Room", "GPIO", 0, "", "", 0)
-# get_device_data(4)
-# get_all_data()
-# chage_data(1, "ConnectionType", "GPIO")
+def device_status(row_id, status):
+    db = db_connect()
+    cursor = db.cursor()
+    # SQL запит для зміни значень елементу
+    sql = "UPDATE Devices SET {}=%s WHERE id=%s"
+    cursor.execute(sql.format("Status"), (status, row_id))
+
+    # Підтвердження змін в базі даних
+    db.commit()
+
+    # Закриття курсора та з'єднання з базою даних
+    cursor.close()
+    db.close()
+
 
 

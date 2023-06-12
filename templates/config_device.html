@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Система подачі корму</title>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='config_device.css') }}">
+  <script>
+      function go_home() {
+        window.location.href = "{{ url_for('index') }}";
+      }
+  </script>
+</head>
+<body>
+  <h1>
+    <button class="home-link" onclick="go_home()">Головна</button>
+    <div class="add-device-title">Система подачі корму</div>
+  </h1>
+
+  <form class="add-device-form" action="{{ url_for('replace_data_form') }}" method="POST">
+    <div class="form-group">
+      <input type="hidden" name="device-id" value="{{ device_id }}">
+      <label for="device-name">Тип пристрою:</label>
+      <input type="text" id="device-type" name="device-type" value="{{ device }}" readonly>
+      <label for="device-name">Назва пристрою:</label>
+      <input type="text" id="device-name" name="device-name" value="{{ name }}" required>
+      <label for="device-desc" class="device-desc">Опис пристрою:</label>
+      <input type="text" id="device-desc" name="device-desc" value="{{ desc }}" required>
+    </div>
+    <div class="form-group">
+      <label for="connection-type">Тип з'єднання:</label>
+      <select id="connection-type" name="connection-type">
+        <option value="wifi" {% if conn_type == "wifi" %}selected{% endif %}>Wi-Fi</option>
+        <option value="ethernet"{% if conn_type == "ethernet" %}selected{% endif %}>Ehertnet</option>
+        <option value="gpio"{% if conn_type == "gpio" %}selected{% endif %}>GPIO</option>
+      </select>
+    </div>
+    <div class="form-group" {% if device != "feeder" %}hidden{% endif %}>
+        <label for="delay-time">Час подачі кожні:</label>
+        <select id="delay-time" name="delay-time" >
+            <option value="h_1" {% if period == "1" %}selected{% endif %}>1 годину</option>
+            <option value="h_2" {% if period == "2" %}selected{% endif %}>2 години</option>
+            <option value="h_4" {% if period == "4" %}selected{% endif %}>4 години</option>
+            <option value="h_6" {% if period == "6" %}selected{% endif %}>6 годин</option>
+            <option value="h_8" {% if period == "8" %}selected{% endif %}>8 годин</option>
+            <option value="h_10" {% if period == "10" %}selected{% endif %}>10 годин</option>
+            <option value="h_12" {% if period == "12" %}selected{% endif %}>12 годин</option>
+            <option value="h_24" {% if period == "24" %}selected{% endif %}>24 години</option>
+          </select>
+      </div>
+      <div class="form-group" {% if device != "feeder" %}hidden{% endif %}>
+        <label for="start-time">Час початку:</label>
+        <input type="time" id="start-time" name="start-time" value="{{ time_start }}" required >
+        <p id="errorText" class="error-text"></p>
+      </div>
+      <div class="form-group" {% if device != "feeder" %}hidden{% endif %}>
+        <label for="portion-mass">Маса порції:</label>
+        <input maxlength="4" max="1000" id="portion-mass" name="portion-mass" value="{{ weight }}" type="number">
+        <p id="errorText" class="error-text"></p>
+      </div>
+    <div class="form-group">
+      <button type="submit", class="submit-button">Зберегти</button>
+    </div>
+  </form>
+</body>
+</html>
